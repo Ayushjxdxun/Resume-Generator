@@ -1,15 +1,22 @@
-//Orchestrates all central middleware applications. It injects JSON parsers, cookie readers, sets global base paths (like /api/auth), and exports the clean configuration to the server runner.
 const express = require("express")
-const cookieParser = require("cookie-parser") // Injected cookie reader package
+const cookieParser = require("cookie-parser")
+const cors = require("cors")
 
-const app=express()//initialise app
+const app = express()
 
-app.use(express.json())//lets us read data in fetch,request format 
-app.use(cookieParser())//middleware to read cookie tokens from req.cookies
+app.use(express.json())
+app.use(cookieParser())
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}))
 
-//require all routes from here 
+/* require all the routes here */
 const authRouter = require("./routes/auth.routes")
-app.use("/api/auth",authRouter)
+
+
+/* using all the routes here */
+app.use("/api/auth", authRouter)
 
 
 module.exports = app
