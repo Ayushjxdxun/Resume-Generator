@@ -36,13 +36,15 @@ const handleSubmit = async (e) => {
                         <label htmlFor="email">Email</label>
                         <input
                             onChange={(e) => { setEmail(e.target.value) }}
-                            type="email" id="email" name='email' placeholder='Enter email address' />
+                            type="email" id="email" name='email' placeholder='Enter email address' value={email}      
+                            autoComplete="off" />
                     </div>
                     <div className="input-group">
                         <label htmlFor="password">Password</label>
                         <input
                             onChange={(e) => { setPassword(e.target.value) }}
-                            type="password" id="password" name='password' placeholder='Enter password' />
+                            type="password" id="password" name='password' placeholder='Enter password' value={password}    
+                            autoComplete="new-password"/>
                     </div>
                     <button className='button primary-button' >Login</button>
                 </form>
