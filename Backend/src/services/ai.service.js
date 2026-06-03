@@ -49,7 +49,7 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
         }
     })
 
-    return JSON.parse(response.text)
+    console.log(JSON.parse(response.text))
 
 
 }
