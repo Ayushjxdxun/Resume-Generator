@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../style/home.scss";
 import { useInterview } from "../hooks/useInterview.js";
 import { useNavigate } from "react-router"; // Fixed typo
@@ -7,11 +7,16 @@ const InterviewHomeUI = ({
   resumeName = "",
   onResumeChange = () => {},
 }) => {
-  const { loading, generateReport } = useInterview();
+  const { loading, generateReport, getReports, reports } = useInterview();
   const navigate = useNavigate(); // Added missing initialization
   const [jobDescription, setJobDescription] = useState("");
   const [selfDescription, setSelfDescription] = useState("");
   const resumeInputRef = useRef();
+
+  // Fetch reports on component mount
+  useEffect(() => {
+    getReports();
+  }, []);
 
   const handleGenerateReport = async () => {
     const resumeFile = resumeInputRef.current.files[0];
@@ -128,6 +133,22 @@ const InterviewHomeUI = ({
       <footer className="interview-footer">
         <p>AI Powered Strategy Generation • Applies 50+</p>
       </footer>
+
+      {/* Recent Reports List */}
+      {reports && reports.length > 0 && (
+        <section className='recent-reports'>
+          <h2>My Recent Interview Plans</h2>
+          <ul className='reports-list'>
+            {reports.map(report => (
+              <li key={report._id} className='report-item' onClick={() => navigate(`/interview/${report._id}`)}>
+                <h3>{report.title || 'Untitled Position'}</h3>
+                <p className='report-meta'>Generated on {new Date(report.createdAt).toLocaleDateString()}</p>
+                <p className={`match-score ${report.matchScore >= 80 ? 'score--high' : report.matchScore >= 60 ? 'score--mid' : 'score--low'}`}>Match Score: {report.matchScore}%</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 };

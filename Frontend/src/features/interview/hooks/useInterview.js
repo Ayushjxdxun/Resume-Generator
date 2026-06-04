@@ -15,6 +15,8 @@ export const useInterview = () => {
         try {
             response = await generateInterviewReport({jobDescription, selfDescription, resumeFile})
             setReport(response.interviewReport)
+            // Add the newly generated report to the reports list
+            setReports(prevReports => [response.interviewReport, ...prevReports])
         } catch (error) {
             console.log(error)
         } finally {

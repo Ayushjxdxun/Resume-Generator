@@ -345,6 +345,83 @@
   margin: 0;
 }
 
+/* Recent Reports Section */
+.recent-reports {
+  max-width: 1400px;
+  margin: 3rem auto 0;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.recent-reports h2 {
+  margin: 0 0 2rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.reports-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.report-item {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.report-item:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(30, 41, 59, 0.8);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.2);
+}
+
+.report-item h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.3;
+}
+
+.report-meta {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.match-score {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.match-score.score--high {
+  color: #86efac;
+}
+
+.match-score.score--mid {
+  color: #fbbf24;
+}
+
+.match-score.score--low {
+  color: #fca5a5;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .interview-container {
@@ -362,6 +439,10 @@
 
   .profile-card {
     grid-column: 2;
+  }
+
+  .reports-list {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
 }
 
@@ -391,6 +472,10 @@
   .profile-card {
     overflow-y: visible;
   }
+
+  .reports-list {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
@@ -416,6 +501,19 @@
 
   .self-description-textarea {
     min-height: 120px;
+  }
+
+  .recent-reports h2 {
+    font-size: 1.35rem;
+  }
+
+  .reports-list {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .report-item {
+    padding: 1.25rem;
   }
 }
 
