@@ -1,54 +1,50 @@
-import { createContext, useState, useEffect } from "react"
+import {createContext, useState, useEffect} from "react"
 
 export const InterviewContext = createContext()
 
-export const InterviewProvider = ({ children }) => {
+export const InterviewProvider = ({children}) => {
     const [loading, setLoading] = useState(false)
+    const [report, setReport] = useState(null)
+    const [reports, setReports] = useState([])
 
-    // 1. Initialize state directly from localStorage safely
-    const [report, setReport] = useState(() => {
+    // Rehydrate state from localStorage on component mount
+    useEffect(() => {
         const savedReport = localStorage.getItem('interviewReport')
+        const savedReports = localStorage.getItem('interviewReports')
+        
         if (savedReport) {
             try {
-                return JSON.parse(savedReport)
+                setReport(JSON.parse(savedReport))
             } catch (error) {
                 console.error('Failed to parse saved report:', error)
             }
         }
-        return null // Default fallback
-    })
-
-    const [reports, setReports] = useState(() => {
-        const savedReports = localStorage.getItem('interviewReports')
+        
         if (savedReports) {
             try {
-                return JSON.parse(savedReports)
+                setReports(JSON.parse(savedReports))
             } catch (error) {
                 console.error('Failed to parse saved reports:', error)
             }
         }
-        return [] // Default fallback
-    })
+    }, [])
 
-    // 2. Sync changes flawlessly (including deletes/emptying out)
+    // Persist report to localStorage whenever it changes
     useEffect(() => {
-        if (report === null) {
-            localStorage.removeItem('interviewReport')
-        } else {
+        if (report) {
             localStorage.setItem('interviewReport', JSON.stringify(report))
         }
     }, [report])
 
+    // Persist reports to localStorage whenever it changes
     useEffect(() => {
-        if (reports.length === 0) {
-            localStorage.removeItem('interviewReports')
-        } else {
+        if (reports && reports.length > 0) {
             localStorage.setItem('interviewReports', JSON.stringify(reports))
         }
     }, [reports])
 
     return (
-        <InterviewContext.Provider value={{ loading, setLoading, report, setReport, reports, setReports }} >
+        <InterviewContext.Provider value={{loading, setLoading, report, setReport,reports, setReports}} >
             {children}
         </InterviewContext.Provider>
     )

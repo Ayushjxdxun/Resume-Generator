@@ -23,6 +23,11 @@
   flex-direction: column;
 }
 
+/* NEW: Enforced flex container configuration for left layout column tracking */
+.left-column {
+  height: 100%;
+}
+
 /* Card Base Style */
 .sidebar-card,
 .content-card {
@@ -33,9 +38,19 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-.sidebar-card {
+/* MODIFIED: Fixed card layout block from your original settings so inner track scrolls while button stays pinned */
+.left-column .sidebar-card {
   padding: 1.5rem;
-  height: fit-content;
+  height: calc(100vh - 4rem);
+  max-height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden; 
+}
+
+/* Original scroll settings moved exclusively to right column card instance */
+.right-column .sidebar-card {
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
 }
@@ -56,6 +71,78 @@
 
 .sidebar-card::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+/* NEW: Independent Scrolling Container for Upper Nav links & items */
+.sidebar-nav-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  margin-bottom: 1rem;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* NEW: Action Holder Wrapper at absolute card base */
+.sidebar-actions {
+  width: 100%;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* NEW: The Styled Download Button (Shares red signatures with your active state values) */
+.download-resume-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 10px;
+  
+  color: #fca5a5;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+
+  svg {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.35);
+
+    svg {
+      transform: translateY(-1px);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 /* Section Labels */
@@ -533,7 +620,7 @@
     padding: 1.5rem;
   }
 
-  .sidebar-card {
+  .left-column .sidebar-card {
     padding: 1.25rem;
   }
 }
@@ -573,6 +660,17 @@
     width: 100%;
   }
 
+  .left-column .sidebar-card {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  
+  .sidebar-nav-content {
+    overflow-y: visible;
+    height: auto;
+  }
+
   .right-column {
     position: static;
     display: grid;
@@ -607,11 +705,6 @@
 
   .content-card {
     padding: 1.25rem;
-  }
-
-  .sidebar-card {
-    max-height: none;
-    height: auto;
   }
 
   .section-header {
@@ -669,7 +762,7 @@
     padding: 1rem;
   }
 
-  .sidebar-card {
+  .left-column .sidebar-card {
     padding: 1rem;
   }
 
