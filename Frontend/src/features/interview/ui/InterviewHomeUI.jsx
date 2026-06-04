@@ -1,15 +1,34 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import "../style/home.scss";
+import { useInterview } from "../hooks/useInterview.js";
+import { useNavigate } from "react-router"; // Fixed typo
 
 const InterviewHomeUI = ({
-  jobDescription = "",
-  selfDescription = "",
   resumeName = "",
-  onJobDescriptionChange = () => {},
-  onSelfDescriptionChange = () => {},
   onResumeChange = () => {},
-  onGenerate = () => {},
 }) => {
+  const { loading, generateReport } = useInterview();
+  const navigate = useNavigate(); // Added missing initialization
+  const [jobDescription, setJobDescription] = useState("");
+  const [selfDescription, setSelfDescription] = useState("");
+  const resumeInputRef = useRef();
+
+  const handleGenerateReport = async () => {
+    const resumeFile = resumeInputRef.current.files[0];
+    const data = await generateReport({ jobDescription, selfDescription, resumeFile });
+    if (data && data._id) {
+      navigate(`/interview/${data._id}`); // Fixed matching frontend URL pattern
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="loading-screen">
+        <h1>Generating Your Interview Strategy...</h1>
+      </main>
+    );
+  }
+
   return (
     <main className="home">
       <div className="interview-container">
@@ -32,17 +51,17 @@ const InterviewHomeUI = ({
             </div>
           </div>
           <p className="panel-description">Paste the full job description here...</p>
-          <textarea
+          <textarea 
+            onChange={(e) => setJobDescription(e.target.value)}
             name="jobDescription"
             id="jobDescription"
             className="job-description-textarea"
             placeholder="Paste the full job description here... e.g. Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design..."
             value={jobDescription}
-            onChange={onJobDescriptionChange}
             rows={14}
           />
           <div className="char-counter">
-            <span>0 / 1000 chars</span>
+            <span>{jobDescription.length} / 1000 chars</span>
           </div>
         </div>
 
@@ -64,7 +83,8 @@ const InterviewHomeUI = ({
               <small className="upload-hint">PDF or DOCX. Max 5MB.</small>
               {resumeName && <div className="resume-filename">{resumeName}</div>}
             </label>
-            <input
+            <input 
+              ref={resumeInputRef} 
               type="file"
               name="resume"
               id="resume"
@@ -77,13 +97,13 @@ const InterviewHomeUI = ({
 
           <div className="input-group">
             <label htmlFor="selfDescription" className="section-label">Quick Self-Description</label>
-            <textarea
+            <textarea 
+              onChange={(e) => setSelfDescription(e.target.value)} 
               name="selfDescription"
               id="selfDescription"
               className="self-description-textarea"
               placeholder="Briefly describe your experience, key skills, and years of experience if you don't have a resume handy..."
               value={selfDescription}
-              onChange={onSelfDescriptionChange}
               rows={8}
             />
           </div>
@@ -95,10 +115,10 @@ const InterviewHomeUI = ({
             </p>
           </div>
 
-          <button
+          <button 
+            onClick={handleGenerateReport} 
             className="button primary-button"
             type="button"
-            onClick={onGenerate}
           >
             Generate My Interview Strategy
           </button>
@@ -113,4 +133,3 @@ const InterviewHomeUI = ({
 };
 
 export default InterviewHomeUI;
-
