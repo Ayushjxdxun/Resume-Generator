@@ -87,13 +87,13 @@ async function generateResumePdfController(req, res) {
 
         const pdfBuffer = await generateResumePdf({ resume, jobDescription, selfDescription })
 
+        // Content-Length has been removed to prevent reverse-proxy compression truncation issues on platforms like Render
         res.set({
             "Content-Type": "application/pdf",
-            "Content-Disposition": `attachment; filename=resume_${interviewReportId}.pdf`,
-            "Content-Length": pdfBuffer.length
+            "Content-Disposition": `attachment; filename=resume_${interviewReportId}.pdf`
         })
 
-        res.send(pdfBuffer)
+        res.end(pdfBuffer)
     } catch (error) {
         console.error("Error inside PDF endpoint handler chain:", error)
         res.status(500).json({ message: "Server error mapping schema rules on compiling target document structures." })

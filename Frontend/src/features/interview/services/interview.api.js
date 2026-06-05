@@ -36,7 +36,10 @@ export const getAllInterviewReports = async () => {
 
 export const generateResumePdf = async (interviewReportId) => {
     const response = await api.post(`/api/interview/resume/pdf/${interviewReportId}`, null, {
-        responseType: "blob" // Important for handling binary data like PDFs
+        responseType: "arraybuffer" // Switched to arraybuffer to safeguard binary formatting across network layers
     })
-    return response.data
+    
+    // Defensive check: If a global response interceptor automatically returns response.data, 
+    // the variable 'response' contains the ArrayBuffer directly. Otherwise, return response.data.
+    return response.data ? response.data : response;
 }
