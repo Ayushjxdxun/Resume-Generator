@@ -46,8 +46,9 @@ async function registerUserController(req, res) {
         // Set the token inside an HTTP cookie
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", 
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" 
+            secure: true, 
+            sameSite: "none" , // Required because domains differ (frontend vs backend)
+            path: "/"
         });
         //  Send back a response confirming registration success
         res.status(201).json({
@@ -107,8 +108,9 @@ async function loginUserController(req, res) {
         // 5. Store the JWT token securely in an HTTP-only browser cookie
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", 
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" 
+            secure: true, 
+            sameSite: "none" , // Required because domains differ (frontend vs backend)
+            path: "/"
         });
         // 6. Return response to client with a status 200 (OK)
         res.status(200).json({

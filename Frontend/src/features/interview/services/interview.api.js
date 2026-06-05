@@ -1,12 +1,13 @@
 import axios from "axios";
 
 // Dynamically determine base URL depending on production environment vs local development
-const baseURL = process.env.NODE_ENV === 'production' ? "" : "http://localhost:3000";
+const baseURL = process.env.NODE_ENV === 'production' ? "https://apexcv-if07.onrender.com" : "http://localhost:3000";
 
 const api = axios.create({
     baseURL: baseURL,
     withCredentials: true
 })
+
 
 export const generateInterviewReport = async ({jobDescription, selfDescription, resumeFile}) => { 
     const formData = new FormData()
