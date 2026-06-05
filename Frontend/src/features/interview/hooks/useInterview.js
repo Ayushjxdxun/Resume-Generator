@@ -51,22 +51,29 @@ export const useInterview = () => {
         }
         return response.interviewReports
     }
-    const getResumePdf = async (interviewReportId) => {
-        setLoading(true)
-        let response=null      
-        try {
-            response = await generateResumePdf(interviewReportId)
-            const url = window.URL.createObjectURL(new Blob([response], { type: 'application/pdf' }))
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', `resume_${interviewReportId}.pdf`) 
-            document.body.appendChild(link)
-            link.click()
-        } catch (error) {
-            console.log(error)
-        }finally {
-            setLoading(false)
-        }
+const getResumePdf = async (interviewReportId) => {
+    setLoading(true)
+    try {
+        // 1. Fetch data stream from API
+        const blobData = await generateResumePdf(interviewReportId)
+        
+        // 2. Map directly to an Object URL without double-wrapping it
+        const url = window.URL.createObjectURL(blobData)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', `resume_${interviewReportId}.pdf`) 
+        
+        document.body.appendChild(link)
+        link.click()
+        
+        // 3. Clean up the DOM element and release allocated cache memory
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+    } catch (error) {
+        console.error("Error generating and downloading resume PDF:", error)
+    } finally {
+        setLoading(false)
     }
+}
     return { loading, report, reports, generateReport, generateReportById, getReports, getResumePdf }
 }

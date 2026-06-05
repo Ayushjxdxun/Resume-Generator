@@ -1,6 +1,5 @@
 const { GoogleGenAI } = require("@google/genai")
 const puppeteer = require("puppeteer")
-const fs = require("fs")
 
 // Fallback check to ensure it reads whichever variable name you set up on Render
 const ai = new GoogleGenAI({
@@ -8,7 +7,6 @@ const ai = new GoogleGenAI({
 })
 
 async function generatePdfFromHtml(htmlContent) {
-    // Production-ready configuration baseline
     let launchArgs = [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -24,8 +22,12 @@ async function generatePdfFromHtml(htmlContent) {
     
     try {
         const page = await browser.newPage();
-        // networkidle0 guarantees fonts and embedded layout calculations are fully settled
-        await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+        
+        // 1. ✨ CRITICAL: Force screen mode so print media stylesheets don't blank out your styles
+        await page.emulateMediaType('screen');
+        
+        // 2. ✨ CRITICAL: Switch to "load" so Render servers don't hang indefinitely on external tracking/fonts
+        await page.setContent(htmlContent, { waitUntil: "load" });
 
         const pdfBuffer = await page.pdf({
             format: "A4", 
@@ -55,79 +57,61 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
     const nativeGeminiSchema = {
         type: "object",
         properties: {
-            matchScore: {
-                type: "number",
-                description: "A score between 0 and 100 indicating how well the candidate's profile matches the job description"
-            },
+            matchScore: { type: "number" },
             technicalQuestions: {
                 type: "array",
-                description: "Technical questions that can be asked in the interview along with their intention and how to answer them",
                 items: {
                     type: "object",
                     properties: {
-                        question: { type: "string", description: "The technical question can be asked in the interview" },
-                        intention: { type: "string", description: "The intention of interviewer behind asking this question" },
-                        answer: { type: "string", description: "How to answer this question, what points to cover, what approach to take etc." }
+                        question: { type: "string" },
+                        intention: { type: "string" },
+                        answer: { type: "string" }
                     },
                     required: ["question", "intention", "answer"]
                 }
             },
             behavioralQuestions: {
                 type: "array",
-                description: "Behavioral questions that can be asked in the interview along with their intention and how to answer them",
                 items: {
                     type: "object",
                     properties: {
-                        question: { type: "string", description: "The behavioral question can be asked in the interview" },
-                        intention: { type: "string", description: "The intention of interviewer behind asking this question" },
-                        answer: { type: "string", description: "How to answer this question, what points to cover, what approach to take etc." }
+                        question: { type: "string" },
+                        intention: { type: "string" },
+                        answer: { type: "string" }
                     },
                     required: ["question", "intention", "answer"]
                 }
             },
             skillGaps: {
                 type: "array",
-                description: "List of skill gaps in the candidate's profile along with their severity",
                 items: {
                     type: "object",
                     properties: {
-                        skill: { type: "string", description: "The skill which the candidate is lacking" },
-                        severity: { 
-                            type: "string", 
-                            enum: ["low", "medium", "high"],
-                            description: "The severity of this skill gap, i.e. how important is this skill for the job and how much it can impact the candidate's chances" 
-                        }
+                        skill: { type: "string" },
+                        severity: { type: "string", enum: ["low", "medium", "high"] }
                     },
                     required: ["skill", "severity"]
                 }
             },
             preparationPlan: {
                 type: "array",
-                description: "A day-wise preparation plan for the candidate to follow in order to prepare for the interview effectively",
                 items: {
                     type: "object",
                     properties: {
-                        day: { type: "number", description: "The day number in the preparation plan, starting from 1" },
-                        focus: { type: "string", description: "The main focus of this day in the preparation plan, e.g. data structures, system design, mock interviews etc." },
-                        tasks: { 
-                            type: "array", 
-                            items: { type: "string" },
-                            description: "List of tasks to be done on this day to follow the preparation plan" 
-                        }
+                        day: { type: "number" },
+                        focus: { type: "string" },
+                        tasks: { type: "array", items: { type: "string" } }
                     },
                     required: ["day", "focus", "tasks"]
                 }
             },
-            title: {
-                type: "string",
-                description: "The title of the job for which the interview report is generated"
-            }
+            title: { type: "string" }
         },
         required: ["matchScore", "technicalQuestions", "behavioralQuestions", "skillGaps", "preparationPlan", "title"]
     };
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-lite", 
+        model: "gemini-2.5-flash", // Use a clean, production-stable identifier
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -167,14 +151,14 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
         properties: {
             html: {
                 type: "string",
-                description: "The HTML content of the resume which can be converted to PDF using any library like puppeteer"
+                description: "The HTML content of the resume"
             }
         },
         required: ["html"]
     };
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-lite",
+        model: "gemini-2.5-flash", // Use a clean, production-stable identifier
         contents: prompt,
         config: {
             responseMimeType: "application/json",
