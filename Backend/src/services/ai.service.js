@@ -8,8 +8,8 @@ const ai = new GoogleGenAI({
 
 async function generatePdfFromHtml(htmlContent) {
     const browser = await puppeteer.launch({
-        // Automatically finds the optimized production binary on Render
-        executablePath: await chromium.executablePath(),
+        // FIXED: Removed the parentheses () because executablePath is a property/getter
+        executablePath: await chromium.executablePath,
         headless: chromium.headless,
         args: [
             ...chromium.args,
@@ -179,7 +179,7 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
     })
 
     const jsonContent = JSON.parse(response.text)
-    const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+    const pdfBuffer = await  generatePdfFromHtml(jsonContent.html)
     return pdfBuffer
 }
 
