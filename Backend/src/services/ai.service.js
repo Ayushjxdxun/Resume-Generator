@@ -1,42 +1,89 @@
 const { GoogleGenAI } = require("@google/genai")
 const puppeteer = require("puppeteer-core")
 const chromium = require("@sparticuz/chromium")
+const fs = require("fs")
 
+// Fallback check to ensure it reads whichever variable name you set up on Render
 const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY
+    apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY
 })
 
 async function generatePdfFromHtml(htmlContent) {
+    // Safely unwrap module configurations if bundled differently by the environment
+    const chrom = chromium.default || chromium;
+
+    // Production-ready configuration baseline
+    let launchArgs = [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-extensions",
+        "--disable-gpu"
+    ];
+
+    // FIX: Safely check if args exist and are iterable before spreading them
+    if (chrom && chrom.args && Array.isArray(chrom.args)) {
+        launchArgs = [...new Set([...launchArgs, ...chrom.args])];
+    }
+
+    let execPath = null;
+    if (chrom) {
+        try {
+            if (typeof chrom.executablePath === 'function') {
+                execPath = await chrom.executablePath();
+            } else if (chrom.executablePath) {
+                execPath = await chrom.executablePath;
+            }
+        } catch (err) {
+            console.warn("Sparticuz chromium path resolution skipped, checking local system:", err.message);
+        }
+    }
+
+    // Render Fallback: If running on a live Linux server instance, pull standard local binaries automatically
+    if (!execPath) {
+        const standardLinuxPaths = [
+            '/usr/bin/google-chrome',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/chromium',
+            '/usr/bin/google-chrome-stable'
+        ];
+        for (const path of standardLinuxPaths) {
+            if (fs.existsSync(path)) {
+                execPath = path;
+                break;
+            }
+        }
+    }
+
+    if (!execPath) {
+        throw new Error("Could not find a valid Chromium executable path.");
+    }
+
     const browser = await puppeteer.launch({
-        // FIXED: Removed the parentheses () because executablePath is a property/getter
-        executablePath: await chromium.executablePath,
-        headless: chromium.headless,
-        args: [
-            ...chromium.args,
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-extensions"
-        ]
-    })
+        executablePath: execPath,
+        headless: chrom ? chrom.headless : true,
+        args: launchArgs
+    });
     
     try {
         const page = await browser.newPage();
-        await page.setContent(htmlContent, { waitUntil: "networkidle2" })
+        // networkidle0 guarantees fonts and embedded layout calculations are fully settled
+        await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
         const pdfBuffer = await page.pdf({
             format: "A4", 
+            printBackground: true,
             margin: {
                 top: "20mm",
                 bottom: "20mm",
                 left: "15mm",
                 right: "15mm"
             }
-        })
+        });
 
-        return pdfBuffer
+        return pdfBuffer;
     } finally {
-        await browser.close()
+        await browser.close();
     }
 }
 
@@ -179,7 +226,7 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
     })
 
     const jsonContent = JSON.parse(response.text)
-    const pdfBuffer = await  generatePdfFromHtml(jsonContent.html)
+    const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
     return pdfBuffer
 }
 
