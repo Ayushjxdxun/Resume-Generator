@@ -9,9 +9,11 @@ app.use(cookieParser())
 
 // Dynamically handle CORS based on environment
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? true : "http://localhost:5173",
+    origin: process.env.NODE_ENV === 'production' 
+        ? "https://your-frontend-app-name.onrender.com" // Replace with your actual frontend URL
+        : "http://localhost:5173",
     credentials: true
-}))
+}));
 
 /* require all the routes here */
 const authRouter = require("./routes/auth.routes")
