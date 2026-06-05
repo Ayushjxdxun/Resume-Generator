@@ -23,10 +23,10 @@ async function generatePdfFromHtml(htmlContent) {
     try {
         const page = await browser.newPage();
         
-        // 1. ✨ CRITICAL: Force screen mode so print media stylesheets don't blank out your styles
+        // Force screen mode so print media stylesheets don't blank out your styles
         await page.emulateMediaType('screen');
         
-        // 2. ✨ CRITICAL: Switch to "load" so Render servers don't hang indefinitely on external tracking/fonts
+        // Switch to "load" so Render servers don't hang indefinitely on external tracking/fonts
         await page.setContent(htmlContent, { waitUntil: "load" });
 
         const pdfBuffer = await page.pdf({
@@ -111,7 +111,7 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
     };
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash", // Use a clean, production-stable identifier
+        model: "gemini-2.5-flash", 
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -123,23 +123,32 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
 }
 
 async function generateResumePdf({ resume, selfDescription, jobDescription }) {
-    const prompt = `Generate resume for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
+    const prompt = `
+                        You are an expert executive resume writer and career coach. Your task is to transform, optimize, and tailor the candidate's original resume to stand out for the specific target job description, utilizing insights from their self-description.
 
-                        The response must be a JSON object with a single field "html" containing the HTML content of the resume.
-                        The resume MUST fit completely within 1 to 2 pages maximum when printed to PDF. Do not let it spill onto a 3rd page.
+                        INPUTS:
+                        1. Original Resume: ${resume}
+                        2. Candidate Self-Description/Context: ${selfDescription}
+                        3. Target Job Description: ${jobDescription}
 
-                        Strict Content Constraints to ensure a 2-page maximum fit:
+                        CRITICAL OPTIMIZATION CORE STRATEGIES:
+                        1. Keyword Tailoring: Analyze the Target Job Description for key technical skills, frameworks, methodologies, and core competencies. Naturally weave these critical keywords into the professional summary, skill grids, and work experience descriptions.
+                        2. Impact & Action Verbs: Rewrite weak, passive sentences into strong, achievement-oriented bullets. Begin every work experience bullet point with a powerful action verb. Where possible, add hypothetical or structured metrics/impact metrics based on typical industry outcomes if numbers aren't provided.
+                        3. Profile Relevance: Cross-reference the self-description to emphasize the project architectures and technical problems the candidate solved that match the target job's daily requirements.
+                        
+                        OUTPUT STRUCTURE CONSTRAINTS:
+                        - The response must be a single JSON object with a single field "html" containing the tailored HTML resume string.
+                        - The resume MUST fit cleanly within 1 to 2 pages maximum when printed to PDF. Do not let it spill onto a 3rd page.
+
+                        Strict Content Layout Constraints to ensure a 2-page maximum fit:
                         1. Limit the "Work Experience" section to a maximum of the 3 most relevant roles, and no more than 3 bullet points per role.
                         2. Limit the "Projects" section to a maximum of 3 key projects, and no more than 2-3 concise bullet points per project.
                         3. Write highly compact, metric-focused descriptions. Avoid wordy introductions, long explanations, or narrative fluff.
                         4. Condense skills into a neat, comma-separated grid or single line per category rather than listing them vertically.
 
                         Strict CSS Layout Constraints inside the generated HTML <style> block:
-                        1. Use a compact font size: 10pt or 11pt for body text, 13pt to 14pt for section headings.
-                        2. Use tight spacing: set line-height to 1.2 or 1.3 maximum.
+                        1. Use a professional, clean layout with a dark/light contrast balance.
+                        2. Use a compact font size: 10pt or 11pt for body text, 13pt to 14pt for section headings.
                         3. Minimize margins and paddings: set margins for sections, paragraphs, and list items (ul, li) to 4px - 6px. Avoid large gaps or empty spacer divs.
                         4. Use CSS flex/grid structures efficiently to organize sections side-by-side where appropriate to maximize printable real estate.
 
@@ -151,14 +160,14 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
         properties: {
             html: {
                 type: "string",
-                description: "The HTML content of the resume"
+                description: "The highly optimized, tailored HTML content of the enhanced resume"
             }
         },
         required: ["html"]
     };
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash", // Use a clean, production-stable identifier
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",
