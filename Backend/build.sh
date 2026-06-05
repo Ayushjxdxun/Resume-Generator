@@ -6,4 +6,4 @@ set -o errexit
 npm install
 
 # 2. Tell Puppeteer to download its local headless Chrome execution engine inside the cloud container
-npx puppeteer blobs download
+npx puppeteer browsers install chrome

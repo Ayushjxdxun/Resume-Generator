@@ -1,6 +1,5 @@
 const { GoogleGenAI } = require("@google/genai")
-const puppeteer = require("puppeteer-core")
-const chromium = require("@sparticuz/chromium")
+const puppeteer = require("puppeteer")
 const fs = require("fs")
 
 // Fallback check to ensure it reads whichever variable name you set up on Render
@@ -9,9 +8,6 @@ const ai = new GoogleGenAI({
 })
 
 async function generatePdfFromHtml(htmlContent) {
-    // Safely unwrap module configurations if bundled differently by the environment
-    const chrom = chromium.default || chromium;
-
     // Production-ready configuration baseline
     let launchArgs = [
         "--no-sandbox",
@@ -21,47 +17,8 @@ async function generatePdfFromHtml(htmlContent) {
         "--disable-gpu"
     ];
 
-    // FIX: Safely check if args exist and are iterable before spreading them
-    if (chrom && chrom.args && Array.isArray(chrom.args)) {
-        launchArgs = [...new Set([...launchArgs, ...chrom.args])];
-    }
-
-    let execPath = null;
-    if (chrom) {
-        try {
-            if (typeof chrom.executablePath === 'function') {
-                execPath = await chrom.executablePath();
-            } else if (chrom.executablePath) {
-                execPath = await chrom.executablePath;
-            }
-        } catch (err) {
-            console.warn("Sparticuz chromium path resolution skipped, checking local system:", err.message);
-        }
-    }
-
-    // Render Fallback: If running on a live Linux server instance, pull standard local binaries automatically
-    if (!execPath) {
-        const standardLinuxPaths = [
-            '/usr/bin/google-chrome',
-            '/usr/bin/chromium-browser',
-            '/usr/bin/chromium',
-            '/usr/bin/google-chrome-stable'
-        ];
-        for (const path of standardLinuxPaths) {
-            if (fs.existsSync(path)) {
-                execPath = path;
-                break;
-            }
-        }
-    }
-
-    if (!execPath) {
-        throw new Error("Could not find a valid Chromium executable path.");
-    }
-
     const browser = await puppeteer.launch({
-        executablePath: execPath,
-        headless: chrom ? chrom.headless : true,
+        headless: true,
         args: launchArgs
     });
     
